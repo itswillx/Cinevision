@@ -1,0 +1,241 @@
+[27-Nov-2025 16:52:59 UTC] Route matched: App\Controllers\AuthController::loginForm
+[27-Nov-2025 16:52:59 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:52:59 UTC] Session user_id: NOT SET
+[27-Nov-2025 16:52:59 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:53:00 UTC] Route matched: App\Controllers\AuthController::login
+[27-Nov-2025 16:53:00 UTC] PHP Warning:  Undefined array key "SUPABASE_SERVICE_KEY" in /home/slinkysa/cinevision/app/Controllers/AuthController.php on line 18
+[27-Nov-2025 16:53:00 UTC] [AUTH] isEmailDisabled - URL: https://YOUR_PROJECT.supabase.co/rest/v1/profiles?select=id,email,disabled&limit=100
+[27-Nov-2025 16:53:00 UTC] [AUTH] isEmailDisabled - HTTP 0
+[27-Nov-2025 16:53:00 UTC] [AUTH] isEmailDisabled - Buscando email: williamzenf5@gmail.com
+[27-Nov-2025 16:53:00 UTC] [AUTH] isEmailDisabled - Resposta inválida
+[27-Nov-2025 16:53:00 UTC] Route matched: App\Controllers\AuthController::loginForm
+[27-Nov-2025 16:53:00 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:53:00 UTC] Session user_id: NOT SET
+[27-Nov-2025 16:53:00 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:54:03 UTC] Route matched: App\Controllers\AuthController::loginForm
+[27-Nov-2025 16:54:03 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:54:03 UTC] Session user_id: NOT SET
+[27-Nov-2025 16:54:03 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:54:04 UTC] Route matched: App\Controllers\AuthController::login
+[27-Nov-2025 16:54:05 UTC] [AUTH] isEmailDisabled - URL: https://jqilaepcgiozfytigaxy.supabase.co/rest/v1/profiles?select=id,email,disabled&limit=100
+[27-Nov-2025 16:54:05 UTC] [AUTH] isEmailDisabled - HTTP 200
+[27-Nov-2025 16:54:05 UTC] [AUTH] isEmailDisabled - Buscando email: williamzenf5@gmail.com
+[27-Nov-2025 16:54:05 UTC] [AUTH] isEmailDisabled - Encontrado! Email: williamzenf5@gmail.com, Disabled: false, Result: ACTIVE
+[27-Nov-2025 16:54:05 UTC] [AUTH] Login - Buscando perfil para user_id: d3620cf7-73a0-4694-9021-c2a657c318a7, email: williamzenf5@gmail.com
+[27-Nov-2025 16:54:05 UTC] [SUPABASE] Service role ativado
+[27-Nov-2025 16:54:05 UTC] [AUTH] Login - Perfil atualizado com sucesso para: williamzenf5@gmail.com
+[27-Nov-2025 16:54:05 UTC] [AUTH] Login - Sessão criada para: williamzenf5@gmail.com (role: admin)
+[27-Nov-2025 16:54:06 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 16:54:06 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 16:54:06 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 16:54:07 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 16:54:07 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 16:54:07 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:54:07 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 16:54:07 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:54:21 UTC] Route matched: App\Controllers\FavoritesController::index
+[27-Nov-2025 16:54:21 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:54:21 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 16:54:21 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:54:23 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 16:54:23 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 16:54:23 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 16:54:23 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 16:54:23 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 16:54:24 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:54:24 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 16:54:24 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:56:30 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 16:56:30 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 16:56:30 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 16:56:30 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 16:56:30 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 16:56:30 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:56:30 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 16:56:30 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:56:36 UTC] Route matched: App\Controllers\AuthController::logout
+[27-Nov-2025 16:56:36 UTC] Route matched: App\Controllers\AuthController::loginForm
+[27-Nov-2025 16:56:36 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:56:36 UTC] Session user_id: NOT SET
+[27-Nov-2025 16:56:36 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:56:38 UTC] Route matched: App\Controllers\AuthController::login
+[27-Nov-2025 16:56:38 UTC] [AUTH] isEmailDisabled - URL: https://jqilaepcgiozfytigaxy.supabase.co/rest/v1/profiles?select=id,email,disabled&limit=100
+[27-Nov-2025 16:56:38 UTC] [AUTH] isEmailDisabled - HTTP 200
+[27-Nov-2025 16:56:38 UTC] [AUTH] isEmailDisabled - Buscando email: williamzenf5@gmail.com
+[27-Nov-2025 16:56:38 UTC] [AUTH] isEmailDisabled - Encontrado! Email: williamzenf5@gmail.com, Disabled: false, Result: ACTIVE
+[27-Nov-2025 16:56:38 UTC] [AUTH] Login - Buscando perfil para user_id: d3620cf7-73a0-4694-9021-c2a657c318a7, email: williamzenf5@gmail.com
+[27-Nov-2025 16:56:38 UTC] [SUPABASE] Service role ativado
+[27-Nov-2025 16:56:39 UTC] [AUTH] Login - Perfil atualizado com sucesso para: williamzenf5@gmail.com
+[27-Nov-2025 16:56:39 UTC] [AUTH] Login - Sessão criada para: williamzenf5@gmail.com (role: admin)
+[27-Nov-2025 16:56:39 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 16:56:39 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 16:56:39 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 16:56:39 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 16:56:39 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 16:56:39 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 16:56:39 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 16:56:39 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 16:59:20 UTC] PHP Warning:  require_once(/home/slinkysa/public_html/../config/db.php): Failed to open stream: No such file or directory in /home/slinkysa/public_html/index.php on line 99
+[27-Nov-2025 16:59:20 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/slinkysa/public_html/../config/db.php' (include_path='.:/opt/cpanel/ea-php83/root/usr/share/pear') in /home/slinkysa/public_html/index.php:99
+Stack trace:
+#0 {main}
+  thrown in /home/slinkysa/public_html/index.php on line 99
+[27-Nov-2025 17:00:59 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:00:59 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 17:00:59 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:01:00 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:01:00 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:01:01 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:01:01 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:01:01 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:03:21 UTC] PHP Warning:  require_once(/home/slinkysa/cinevision/config/db.php): Failed to open stream: No such file or directory in /home/slinkysa/public_html/index.php on line 98
+[27-Nov-2025 17:03:21 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/slinkysa/cinevision/config/db.php' (include_path='.:/opt/cpanel/ea-php83/root/usr/share/pear') in /home/slinkysa/public_html/index.php:98
+Stack trace:
+#0 {main}
+  thrown in /home/slinkysa/public_html/index.php on line 98
+[27-Nov-2025 17:04:23 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:04:23 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 17:04:23 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:04:23 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:04:23 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:04:24 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:04:24 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:04:24 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:06:44 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:06:44 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 17:06:44 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:06:46 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:06:46 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:06:47 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:06:47 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:06:47 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:06:51 UTC] Route matched: App\Controllers\AuthController::logout
+[27-Nov-2025 17:06:51 UTC] Route matched: App\Controllers\AuthController::loginForm
+[27-Nov-2025 17:06:51 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:06:51 UTC] Session user_id: NOT SET
+[27-Nov-2025 17:06:51 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:06:52 UTC] Route matched: App\Controllers\AuthController::login
+[27-Nov-2025 17:06:53 UTC] [AUTH] isEmailDisabled - URL: https://jqilaepcgiozfytigaxy.supabase.co/rest/v1/profiles?select=id,email,disabled&limit=100
+[27-Nov-2025 17:06:53 UTC] [AUTH] isEmailDisabled - HTTP 200
+[27-Nov-2025 17:06:53 UTC] [AUTH] isEmailDisabled - Buscando email: williamzenf5@gmail.com
+[27-Nov-2025 17:06:53 UTC] [AUTH] isEmailDisabled - Encontrado! Email: williamzenf5@gmail.com, Disabled: false, Result: ACTIVE
+[27-Nov-2025 17:06:53 UTC] [AUTH] Login - Buscando perfil para user_id: d3620cf7-73a0-4694-9021-c2a657c318a7, email: williamzenf5@gmail.com
+[27-Nov-2025 17:06:53 UTC] [SUPABASE] Service role ativado
+[27-Nov-2025 17:06:53 UTC] [AUTH] Login - Perfil atualizado com sucesso para: williamzenf5@gmail.com
+[27-Nov-2025 17:06:53 UTC] [AUTH] Login - Sessão criada para: williamzenf5@gmail.com (role: admin)
+[27-Nov-2025 17:06:54 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:06:54 UTC] CatalogController::index - TMDB configured: YES
+[27-Nov-2025 17:06:54 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:06:54 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:06:54 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:06:54 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:06:54 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:06:54 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:08:56 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:08:56 UTC] CatalogController::index - TMDB configured: NO
+[27-Nov-2025 17:08:56 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:08:56 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:08:56 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:08:57 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:08:57 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:08:57 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:09:01 UTC] Route matched: App\Controllers\CatalogController::search
+[27-Nov-2025 17:09:01 UTC] CatalogController::search - Query: '', Type: '', Genre: '', Year: ''
+[27-Nov-2025 17:09:01 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:09:01 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:09:01 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:09:02 UTC] Route matched: App\Controllers\FavoritesController::index
+[27-Nov-2025 17:09:02 UTC] API Request: GET /api/progress/continue-watching
+[27-Nov-2025 17:09:02 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:09:02 UTC] Route matched: App\Controllers\WatchProgressController::continueWatching
+[27-Nov-2025 17:09:03 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:09:03 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:09:03 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:09:03 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:09:03 UTC] CatalogController::index - TMDB configured: NO
+[27-Nov-2025 17:09:03 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:09:03 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:09:03 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:09:04 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:09:04 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:09:04 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:09:04 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:09:08 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:09:09 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:09:09 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:09:38 UTC] Route matched: App\Controllers\AuthController::logout
+[27-Nov-2025 17:09:39 UTC] Route matched: App\Controllers\AuthController::loginForm
+[27-Nov-2025 17:09:39 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:09:39 UTC] Session user_id: NOT SET
+[27-Nov-2025 17:09:39 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:09:40 UTC] Route matched: App\Controllers\AuthController::login
+[27-Nov-2025 17:09:41 UTC] [AUTH] isEmailDisabled - URL: https://jqilaepcgiozfytigaxy.supabase.co/rest/v1/profiles?select=id,email,disabled&limit=100
+[27-Nov-2025 17:09:41 UTC] [AUTH] isEmailDisabled - HTTP 200
+[27-Nov-2025 17:09:41 UTC] [AUTH] isEmailDisabled - Buscando email: williamzenf5@gmail.com
+[27-Nov-2025 17:09:41 UTC] [AUTH] isEmailDisabled - Encontrado! Email: williamzenf5@gmail.com, Disabled: false, Result: ACTIVE
+[27-Nov-2025 17:09:41 UTC] [AUTH] Login - Buscando perfil para user_id: d3620cf7-73a0-4694-9021-c2a657c318a7, email: williamzenf5@gmail.com
+[27-Nov-2025 17:09:41 UTC] [SUPABASE] Service role ativado
+[27-Nov-2025 17:09:41 UTC] [AUTH] Login - Perfil atualizado com sucesso para: williamzenf5@gmail.com
+[27-Nov-2025 17:09:41 UTC] [AUTH] Login - Sessão criada para: williamzenf5@gmail.com (role: admin)
+[27-Nov-2025 17:09:41 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:09:41 UTC] CatalogController::index - TMDB configured: NO
+[27-Nov-2025 17:09:41 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:09:41 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:09:41 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:09:42 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:09:42 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:09:42 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:09:44 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:09:45 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:09:45 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:09:45 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:12:08 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:12:10 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:12:10 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:12:10 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:12:20 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:12:22 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:12:22 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:12:22 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:13:05 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:13:07 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:13:07 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:13:07 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:14:29 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:14:31 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:14:31 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:14:31 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:16:47 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:16:47 UTC] CatalogController::index - TMDB configured: NO
+[27-Nov-2025 17:16:47 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:16:48 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:16:48 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:16:49 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:16:49 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:16:49 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:16:54 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:16:56 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:16:56 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:16:56 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:17:49 UTC] Route matched: App\Controllers\AdminController::index
+[27-Nov-2025 17:17:49 UTC] [SUPABASE] Service role ativado
+[27-Nov-2025 17:17:50 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:17:50 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:17:50 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:22:47 UTC] Route matched: App\Controllers\AdminController::index
+[27-Nov-2025 17:22:47 UTC] [SUPABASE] Service role ativado
+[27-Nov-2025 17:22:47 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:22:47 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:22:47 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:22:48 UTC] Route matched: App\Controllers\CatalogController::index
+[27-Nov-2025 17:22:48 UTC] CatalogController::index - TMDB configured: NO
+[27-Nov-2025 17:22:48 UTC] CatalogController::index - Using Torrentio fallback
+[27-Nov-2025 17:22:49 UTC] CatalogController::index - Fallback movies count: 45
+[27-Nov-2025 17:22:49 UTC] CatalogController::index - Fallback series count: 50
+[27-Nov-2025 17:22:50 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:22:50 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:22:50 UTC] Route matched: App\Controllers\FavoritesController::list
+[27-Nov-2025 17:22:50 UTC] Route matched: App\Controllers\PlayerController::watch
+[27-Nov-2025 17:22:52 UTC] API Request: GET /api/favorites/list
+[27-Nov-2025 17:22:52 UTC] Session user_id: d3620cf7-73a0-4694-9021-c2a657c318a7
+[27-Nov-2025 17:22:52 UTC] Route matched: App\Controllers\FavoritesController::list

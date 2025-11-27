@@ -1,0 +1,43 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+config/env.php
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.trae/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+debug_output.txt
+
+# Executables
+*.exe
+*.zip
+
+# PHP
+vendor/
+composer.lock
+
+# Temporary files
+*.tmp
+*.temp
+
+# Test files
+test_*.php
+debug_*.php
+
+# Tunnel configs
+ngrok.yml
+cloudflared.yml
+
+# Keep server scripts but ignore sensitive configs
+php.ini

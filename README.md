@@ -103,7 +103,9 @@ Todas as tabelas possuem RLS habilitado, garantindo que cada usuário só acesse
 
 ## 📸 Screenshots
 
-<img width="1366" height="887" alt="image" src="https://github.com/user-attachments/assets/3c489ce4-79f1-48ef-8866-f97c0e716962" />
+<img width="1301" height="845" alt="image" src="https://github.com/user-attachments/assets/5ac55652-0ef0-4c70-a88e-7e538892999d" />
+<img width="1223" height="755" alt="image" src="https://github.com/user-attachments/assets/87cae229-8b24-46b4-a145-01390c8c107a" />
+
 
 
 ## 🤝 Contribuindo

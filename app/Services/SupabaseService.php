@@ -129,6 +129,27 @@ class SupabaseService {
         ]);
     }
 
+    /**
+     * Refresh the access token using a refresh token
+     * @param string $refreshToken
+     * @return array
+     */
+    public function authRefreshToken($refreshToken) {
+        $url = $this->url . '/auth/v1/token?grant_type=refresh_token';
+        return $this->requestAuth('POST', $url, [
+            'refresh_token' => $refreshToken
+        ]);
+    }
+
+    /**
+     * Get the current user info using the access token
+     * @return array
+     */
+    public function getUser() {
+        $url = $this->url . '/auth/v1/user';
+        return $this->requestAuth('GET', $url);
+    }
+
     private function requestAuth($method, $url, $data = null) {
         $ch = curl_init();
         $headers = [

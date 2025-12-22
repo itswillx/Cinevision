@@ -377,7 +377,86 @@ const CineVision = {
 document.addEventListener('DOMContentLoaded', () => {
     CineVision.init();
     CineVision.updateProgressBars();
+    
+    // Iniciar auto-refresh de token
+    AuthRefresh.init();
 });
 
 // Expor globalmente
 window.CineVision = CineVision;
+
+/**
+ * Sistema de Auto-Refresh de Token
+ * Renova automaticamente o token de autenticação antes de expirar
+ */
+const AuthRefresh = {
+    // Intervalo de verificação (a cada 2 minutos)
+    CHECK_INTERVAL: 2 * 60 * 1000,
+    
+    // Timer ID
+    timerId: null,
+    
+    /**
+     * Inicializa o sistema de auto-refresh
+     */
+    init() {
+        // Verificar imediatamente
+        this.checkAndRefresh();
+        
+        // Configurar verificação periódica
+        this.timerId = setInterval(() => {
+            this.checkAndRefresh();
+        }, this.CHECK_INTERVAL);
+        
+        // Também verificar quando a página volta a ficar visível
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this.checkAndRefresh();
+            }
+        });
+        
+        console.log('[AuthRefresh] Sistema de auto-refresh iniciado');
+    },
+    
+    /**
+     * Verifica e renova o token se necessário
+     */
+    async checkAndRefresh() {
+        try {
+            const response = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    console.log('[AuthRefresh] Token renovado, expira em:', new Date(data.expires_at * 1000).toLocaleString());
+                }
+            } else if (response.status === 401) {
+                // Token expirou e não pode ser renovado - redirecionar para login
+                console.warn('[AuthRefresh] Sessão expirada, redirecionando para login...');
+                window.location.href = '/login?expired=1';
+            }
+        } catch (e) {
+            // Erro de rede - não fazer nada, tentar novamente no próximo intervalo
+            console.warn('[AuthRefresh] Erro ao verificar token:', e.message);
+        }
+    },
+    
+    /**
+     * Para o sistema de auto-refresh
+     */
+    stop() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+        }
+    }
+};
+
+// Expor globalmente
+window.AuthRefresh = AuthRefresh;

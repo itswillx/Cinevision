@@ -174,7 +174,8 @@ $year = $meta['year'] ?? '';
 <script>
     const rdEnabled = <?php echo $rdEnabled ? 'true' : 'false'; ?>;
     const qualityPref = '<?php echo htmlspecialchars($qualityPref ?? ''); ?>';
-    // Nota: Token RD não é exposto no frontend por segurança - usado apenas no backend
+    // Token RD para configurar Torrentio (necessário para streams resolvidos)
+    const rdToken = '<?php echo htmlspecialchars($rdToken ?? ''); ?>';
     const video = document.getElementById('videoPlayer');
     const imdbId = '<?php echo $imdbId ?? ''; ?>';
     const contentType = '<?php echo $type ?? 'movie'; ?>';
@@ -471,8 +472,6 @@ $year = $meta['year'] ?? '';
     // Buscar streams do Torrentio com configuração específica
     async function fetchTorrentioStreams(language) {
         // Construir configuração do Torrentio
-        // NOTA: NÃO incluímos o token RD aqui por segurança
-        // O RD será usado apenas no backend para resolver os streams
         let configParts = [
             'sort=seeders',                    // Ordenar por seeders
             'language=' + language,            // Filtro de idioma
@@ -480,8 +479,12 @@ $year = $meta['year'] ?? '';
             'qualityfilter=cam,screener,tc,ts' // Excluir qualidades ruins
         ];
         
-        // Opção para não mostrar links de download (só streaming)
-        configParts.push('debridoptions=nodownloadlinks');
+        // Se temos token RD, incluir para obter streams resolvidos (cached)
+        if (rdToken) {
+            configParts.push('realdebrid=' + rdToken);
+        } else {
+            configParts.push('debridoptions=nodownloadlinks');
+        }
         
         const config = configParts.join('|');
         let torrentioUrl = 'https://torrentio.strem.fun/' + encodeURIComponent(config);
@@ -508,57 +511,83 @@ $year = $meta['year'] ?? '';
         streams.forEach(s => s._searchLang = language);
         
         console.log(`Found ${streams.length} ${language} streams`);
+        if (streams.length > 0) {
+            console.log('[Player] Sample stream structure:', JSON.stringify(streams[0], null, 2).substring(0, 500));
+        }
         return streams;
     }
     
     // Mesclar streams removendo duplicatas
     function mergeStreams(ptStreams, enStreams) {
         const merged = [];
-        const seenHashes = new Set();
+        const seenKeys = new Set();
+        
+        // Função para gerar chave única para um stream
+        function getStreamKey(stream) {
+            // Prioridade: infoHash > URL completa > título+nome
+            const hash = stream.infoHash || (stream.behaviorHints?.infoHash) || '';
+            if (hash) return 'hash:' + hash;
+            if (stream.url) return 'url:' + stream.url;
+            // Fallback: usar título + nome como chave
+            const title = stream.title || '';
+            const name = stream.name || '';
+            return 'title:' + title + '|' + name;
+        }
         
         // Primeiro: streams em português (prioridade)
         for (const stream of ptStreams) {
-            const hash = stream.infoHash || (stream.behaviorHints?.infoHash) || '';
-            const key = hash || (stream.url ? btoa(stream.url).substring(0, 20) : Math.random());
+            const key = getStreamKey(stream);
             
-            if (!seenHashes.has(key)) {
+            if (!seenKeys.has(key)) {
                 stream._priority = 'pt';
                 merged.push(stream);
-                seenHashes.add(key);
+                seenKeys.add(key);
             }
         }
         
         // Segundo: streams em inglês (sem duplicatas)
         for (const stream of enStreams) {
-            const hash = stream.infoHash || (stream.behaviorHints?.infoHash) || '';
-            const key = hash || (stream.url ? btoa(stream.url).substring(0, 20) : Math.random());
+            const key = getStreamKey(stream);
             
-            if (!seenHashes.has(key)) {
+            if (!seenKeys.has(key)) {
                 stream._priority = 'en';
                 merged.push(stream);
-                seenHashes.add(key);
+                seenKeys.add(key);
             }
         }
         
+        console.log('[Player] Merge: PT=' + ptStreams.length + ', EN=' + enStreams.length + ', Total=' + merged.length);
         return merged;
     }
     
     // Filtrar fontes de baixa qualidade
     function filterLowQualitySources(streams) {
-        const blacklist = ['cam', 'camrip', 'hdcam', 'telesync', 'hdts', 'telecine', 'screener', 'dvdscr', 'workprint', 'sample', 'trailer'];
+        // Usar regex com word boundaries para evitar falsos positivos
+        // Ex: "screener" não deve filtrar "screen" ou "widescreen"
+        const blacklistPatterns = [
+            /\bcam\b/i, /\bcamrip\b/i, /\bhdcam\b/i, 
+            /\btelesync\b/i, /\bhdts\b/i, /\bts\b/i,
+            /\btelecine\b/i, /\btc\b/i,
+            /\bscreener\b/i, /\bdvdscr\b/i, 
+            /\bworkprint\b/i, /\bsample\b/i
+        ];
         
-        return streams.filter(stream => {
+        const before = streams.length;
+        const filtered = streams.filter(stream => {
             const title = (stream.title || '').toLowerCase();
             const name = (stream.name || '').toLowerCase();
             const combined = title + ' ' + name;
             
-            for (const term of blacklist) {
-                if (combined.includes(term)) {
+            for (const pattern of blacklistPatterns) {
+                if (pattern.test(combined)) {
                     return false;
                 }
             }
             return true;
         });
+        
+        console.log('[Player] Filter: antes=' + before + ', depois=' + filtered.length);
+        return filtered;
     }
     
     // Função para ordenar streams pela qualidade preferida
@@ -654,9 +683,10 @@ $year = $meta['year'] ?? '';
                 langBadge = '<span style="background: #3498db; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 5px;">EN</span>';
             }
             
-            // Get infoHash and URL
+            // Get infoHash, URL and fileIdx
             const infoHash = stream.infoHash || (stream.behaviorHints?.infoHash || '');
             const streamUrl = stream.url || stream.externalUrl || '';
+            const fileIdx = stream.fileIdx ?? (stream.behaviorHints?.fileIdx ?? -1);
             
             return `
                 <div class="stream-item" 
@@ -664,6 +694,7 @@ $year = $meta['year'] ?? '';
                      data-infohash="${escapeAttr(infoHash)}"
                      data-url="${escapeAttr(streamUrl)}"
                      data-title="${escapeAttr(streamTitle)}"
+                     data-fileidx="${fileIdx}"
                      style="padding: 12px; border-bottom: 1px solid #333; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s;" 
                      onclick="playStream(this)">
                     <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 60px;">
@@ -957,6 +988,7 @@ $year = $meta['year'] ?? '';
         const infoHash = element.dataset.infohash;
         const streamUrl = element.dataset.url;
         const streamTitle = element.dataset.title;
+        const fileIdx = parseInt(element.dataset.fileidx) ?? -1;
         
         // Salvar estado do stream atual para o progresso
         currentStreamIndex = parseInt(element.dataset.index) || streamIndex;
@@ -1034,13 +1066,39 @@ $year = $meta['year'] ?? '';
             if (addRes.error) throw new Error(addRes.message || 'Erro ao adicionar magnet');
             console.log('Magnet added:', addRes);
 
-            log('Selecionando arquivo...');
+            log('Analisando arquivos do torrent...');
             
-            // 2. Select File (Auto select 'all')
+            // 2. Get torrent info first to find the correct file ID
+            // RD file IDs start at 1, not 0, and fileIdx from Torrentio is 0-based index
+            let initialInfo = await fetch(`/api/rd/torrent-info?id=${addRes.id}`).then(r => r.json());
+            
+            let fileIdToSelect = 'all';
+            if (fileIdx >= 0 && initialInfo.files && initialInfo.files.length > 0) {
+                // Find video files and get the correct one by index
+                const videoExtensions = ['mp4', 'mkv', 'avi', 'mov', 'ts', 'webm'];
+                const videoFiles = initialInfo.files.filter(f => {
+                    const ext = f.path.split('.').pop().toLowerCase();
+                    return videoExtensions.includes(ext);
+                });
+                
+                // If fileIdx is within bounds, use the file's actual ID
+                if (fileIdx < videoFiles.length) {
+                    fileIdToSelect = String(videoFiles[fileIdx].id);
+                    console.log('[Player] Usando arquivo específico ID:', fileIdToSelect, 'para episódio');
+                } else if (fileIdx < initialInfo.files.length) {
+                    // Fallback: use the fileIdx as direct index into all files
+                    fileIdToSelect = String(initialInfo.files[fileIdx].id);
+                    console.log('[Player] Usando arquivo ID (fallback):', fileIdToSelect);
+                }
+            }
+            
+            log('Selecionando arquivo...');
+            console.log('[Player] Selecionando arquivo:', fileIdToSelect, '(fileIdx:', fileIdx, ')');
+            
             await fetch('/api/rd/select-file', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `torrent_id=${addRes.id}&file_id=all`
+                body: `torrent_id=${addRes.id}&file_id=${fileIdToSelect}`
             }).then(r => r.json());
 
             // Wait loop for status 'downloaded'
@@ -1077,29 +1135,42 @@ $year = $meta['year'] ?? '';
                 }
             }
 
-            // Find the largest video file
-            const videoExtensions = ['mp4', 'mkv', 'avi', 'mov'];
-            let bestFileIndex = -1;
-            let maxSize = 0;
-
-            if (infoRes.files && infoRes.files.length > 0) {
-                infoRes.files.forEach((file, index) => {
-                    const ext = file.path.split('.').pop().toLowerCase();
-                    if (videoExtensions.includes(ext) && file.bytes > maxSize) {
-                        maxSize = file.bytes;
-                        bestFileIndex = index;
-                    }
-                });
-            }
-
+            // Get the link to unrestrict
+            // When we selected a specific file (fileIdx >= 0), RD generates only one link for that file
+            // When we selected 'all', we need to find the largest video file
             let linkToUnrestrict = '';
+            
             if (infoRes.links && infoRes.links.length > 0) {
-                // Map file index to link index. 
-                // If we selected 'all', indices should match.
-                if (bestFileIndex >= 0 && bestFileIndex < infoRes.links.length) {
-                    linkToUnrestrict = infoRes.links[bestFileIndex];
-                } else {
+                if (infoRes.links.length === 1) {
+                    // Single file selected (specific episode) - use the only link
                     linkToUnrestrict = infoRes.links[0];
+                    console.log('[Player] Usando único link disponível (arquivo específico selecionado)');
+                } else {
+                    // Multiple files - find the correct one based on selected files
+                    const videoExtensions = ['mp4', 'mkv', 'avi', 'mov', 'ts', 'webm'];
+                    const selectedFiles = infoRes.files ? 
+                        infoRes.files.filter(f => f.selected === 1) : [];
+                    
+                    if (selectedFiles.length > 0) {
+                        // Find largest video file among selected
+                        let maxSize = 0;
+                        let targetLinkIndex = 0;
+                        
+                        selectedFiles.forEach((file, linkIndex) => {
+                            const ext = file.path.split('.').pop().toLowerCase();
+                            if (videoExtensions.includes(ext) && file.bytes > maxSize) {
+                                maxSize = file.bytes;
+                                targetLinkIndex = linkIndex;
+                            }
+                        });
+                        
+                        linkToUnrestrict = infoRes.links[targetLinkIndex];
+                        console.log('[Player] Usando link do maior arquivo:', targetLinkIndex);
+                    } else {
+                        // Fallback: first link
+                        linkToUnrestrict = infoRes.links[0];
+                        console.log('[Player] Fallback: usando primeiro link');
+                    }
                 }
             } else {
                 throw new Error('Nenhum link gerado.');

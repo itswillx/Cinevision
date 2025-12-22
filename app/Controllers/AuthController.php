@@ -353,7 +353,18 @@ class AuthController {
         $_SESSION['user_role'] = $currentRole;
         $_SESSION['access_token'] = $token;
         
-        error_log("[AUTH] Login - Sessão criada para: $email (role: $currentRole)");
+        // Armazenar refresh_token e expires_at para auto-refresh
+        if (isset($loginRes['json']['refresh_token'])) {
+            $_SESSION['refresh_token'] = $loginRes['json']['refresh_token'];
+        }
+        if (isset($loginRes['json']['expires_at'])) {
+            $_SESSION['token_expires_at'] = $loginRes['json']['expires_at'];
+        } elseif (isset($loginRes['json']['expires_in'])) {
+            // expires_in é em segundos, converter para timestamp
+            $_SESSION['token_expires_at'] = time() + $loginRes['json']['expires_in'];
+        }
+        
+        error_log("[AUTH] Login - Sessão criada para: $email (role: $currentRole, expires_at: " . ($_SESSION['token_expires_at'] ?? 'N/A') . ")");
         
         header('Location: /');
         exit;
@@ -402,5 +413,49 @@ class AuthController {
     public function resetForm() {
         $view = __DIR__ . '/../Views/auth/reset.php';
         require __DIR__ . '/../Views/layout.php';
+    }
+
+    /**
+     * API endpoint para refresh de token
+     * Chamado pelo frontend quando detecta que o token está expirando
+     */
+    public function refreshToken() {
+        header('Content-Type: application/json');
+        
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['refresh_token'])) {
+            http_response_code(401);
+            echo json_encode(['error' => true, 'message' => 'Não autenticado']);
+            return;
+        }
+        
+        $svc = new SupabaseService();
+        $refreshRes = $svc->authRefreshToken($_SESSION['refresh_token']);
+        
+        if (!$refreshRes['ok'] || !isset($refreshRes['json']['access_token'])) {
+            error_log("[AUTH] API Refresh falhou: " . json_encode($refreshRes));
+            http_response_code(401);
+            echo json_encode(['error' => true, 'message' => 'Falha ao renovar token']);
+            return;
+        }
+        
+        // Atualizar sessão com novos tokens
+        $_SESSION['access_token'] = $refreshRes['json']['access_token'];
+        
+        if (isset($refreshRes['json']['refresh_token'])) {
+            $_SESSION['refresh_token'] = $refreshRes['json']['refresh_token'];
+        }
+        
+        if (isset($refreshRes['json']['expires_at'])) {
+            $_SESSION['token_expires_at'] = $refreshRes['json']['expires_at'];
+        } elseif (isset($refreshRes['json']['expires_in'])) {
+            $_SESSION['token_expires_at'] = time() + $refreshRes['json']['expires_in'];
+        }
+        
+        error_log("[AUTH] API Refresh bem sucedido para: " . ($_SESSION['user_email'] ?? 'unknown'));
+        
+        echo json_encode([
+            'success' => true,
+            'expires_at' => $_SESSION['token_expires_at'] ?? null
+        ]);
     }
 }

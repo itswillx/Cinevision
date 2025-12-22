@@ -77,6 +77,84 @@ function forceLogoutIfDisabled(): void {
     }
 }
 
+/**
+ * Verifica e renova o token de acesso se estiver próximo de expirar
+ * Renova automaticamente se faltar menos de 5 minutos para expirar
+ */
+function autoRefreshToken(): void {
+    // Verificar se há sessão ativa com refresh_token
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['refresh_token'])) {
+        return;
+    }
+    
+    // Verificar se o token está próximo de expirar (menos de 5 minutos)
+    $expiresAt = $_SESSION['token_expires_at'] ?? 0;
+    $now = time();
+    $bufferTime = 300; // 5 minutos de buffer
+    
+    // Se não temos expires_at ou ainda não está próximo de expirar, retornar
+    if ($expiresAt === 0 || ($expiresAt - $now) > $bufferTime) {
+        return;
+    }
+    
+    error_log("[AUTH] Token expirando em " . ($expiresAt - $now) . "s, tentando refresh...");
+    
+    // Tentar renovar o token
+    $config = require __DIR__ . '/../config/env.php';
+    $supabaseUrl = $config['SUPABASE_URL'];
+    $supabaseKey = $config['SUPABASE_KEY'];
+    $refreshToken = $_SESSION['refresh_token'];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $supabaseUrl . '/auth/v1/token?grant_type=refresh_token');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['refresh_token' => $refreshToken]));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'apikey: ' . $supabaseKey,
+        'Content-Type: application/json'
+    ]);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        $data = json_decode($response, true);
+        
+        if (isset($data['access_token'])) {
+            $_SESSION['access_token'] = $data['access_token'];
+            
+            if (isset($data['refresh_token'])) {
+                $_SESSION['refresh_token'] = $data['refresh_token'];
+            }
+            
+            if (isset($data['expires_at'])) {
+                $_SESSION['token_expires_at'] = $data['expires_at'];
+            } elseif (isset($data['expires_in'])) {
+                $_SESSION['token_expires_at'] = time() + $data['expires_in'];
+            }
+            
+            error_log("[AUTH] Token renovado com sucesso! Novo expires_at: " . ($_SESSION['token_expires_at'] ?? 'N/A'));
+        }
+    } else {
+        error_log("[AUTH] Falha ao renovar token. HTTP $httpCode. Response: " . substr($response, 0, 200));
+        
+        // Se o refresh falhou com 401/403, o refresh_token expirou - fazer logout
+        if ($httpCode === 401 || $httpCode === 403) {
+            error_log("[AUTH] Refresh token expirado, forçando logout");
+            session_destroy();
+            session_start();
+            $_SESSION['error'] = 'Sua sessão expirou. Por favor, faça login novamente.';
+            header('Location: /login');
+            exit;
+        }
+    }
+}
+
 // Autoloader
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
@@ -101,9 +179,12 @@ require_once '/home/slinkysa/cinevision/config/db.php';
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
-// MIDDLEWARE: Verificar se usuário logado está desabilitado (exceto rotas de auth)
+// MIDDLEWARE: Auto-refresh de token e verificação de usuário desabilitado
 $authRoutes = ['/login', '/register', '/auth/login', '/auth/register', '/auth/logout', '/recover', '/auth/recover', '/auth/reset'];
 if (isset($_SESSION['user_id']) && !in_array($uri, $authRoutes)) {
+    // Primeiro: tentar renovar token se estiver expirando
+    autoRefreshToken();
+    // Segundo: verificar se usuário está desabilitado
     forceLogoutIfDisabled();
 }
 
@@ -166,6 +247,8 @@ $routes = [
         '/api/admin/user/update' => ['App\Controllers\AdminController', 'update'],
         '/api/admin/user/delete' => ['App\Controllers\AdminController', 'delete'],
         '/api/admin/user/restore' => ['App\Controllers\AdminController', 'restore'],
+        // Auth refresh
+        '/api/auth/refresh' => ['App\Controllers\AuthController', 'refreshToken'],
     ]
 ];
 

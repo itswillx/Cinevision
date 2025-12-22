@@ -400,6 +400,12 @@ const AuthRefresh = {
      * Inicializa o sistema de auto-refresh
      */
     init() {
+        // Não iniciar em páginas de login/registro (usuário não autenticado)
+        if (window.location.pathname === '/login' || window.location.pathname === '/register') {
+            console.log('[AuthRefresh] Página de autenticação detectada, auto-refresh desativado');
+            return;
+        }
+        
         // Verificar imediatamente
         this.checkAndRefresh();
         
@@ -437,9 +443,10 @@ const AuthRefresh = {
                     console.log('[AuthRefresh] Token renovado, expira em:', new Date(data.expires_at * 1000).toLocaleString());
                 }
             } else if (response.status === 401) {
-                // Token expirou e não pode ser renovado - redirecionar para login
-                console.warn('[AuthRefresh] Sessão expirada, redirecionando para login...');
-                window.location.href = '/login?expired=1';
+                // Token expirou e não pode ser renovado - parar o refresh e não redirecionar
+                // O usuário será redirecionado naturalmente ao tentar fazer uma ação que requer auth
+                console.warn('[AuthRefresh] Sessão expirada ou usuário não autenticado');
+                this.stop();
             }
         } catch (e) {
             // Erro de rede - não fazer nada, tentar novamente no próximo intervalo

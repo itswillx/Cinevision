@@ -3,27 +3,68 @@
 namespace App\Services;
 
 class OpenSubtitlesService {
-    // Stremio addon for OpenSubtitles
-    private $baseUrl = 'https://opensubtitlesv3-pro.dexter21767.com';
-    private $config = 'eyJsYW5ncyI6WyJwb3J0dWd1ZXNlLWJyIl0sInNvdXJjZSI6InRydXN0ZWQiLCJhaVRyYW5zbGF0ZWQiOnRydWUsImF1dG9BZGp1c3RtZW50Ijp0cnVlfQ==';
+    private $apiKey;
+    private $baseUrl = 'https://api.opensubtitles.com/api/v1';
+    
+    public function __construct() {
+        $this->apiKey = $this->getApiKeyFromConfig();
+    }
+    
+    private function getApiKeyFromConfig() {
+        $configFile = __DIR__ . '/../../config/env.php';
+        if (file_exists($configFile)) {
+            $config = include $configFile;
+            return $config['OPENSUBTITLES_API_KEY'] ?? '';
+        }
+        return '';
+    }
     
     public function searchSubtitles($imdbId, $title = '', $type = 'movie', $season = null, $episode = null) {
-        // Clean IMDB ID
-        $imdbId = preg_replace('/^tt/', '', $imdbId);
-        
-        // Stremio addon format: 
-        // Movies: /subtitles/movie/tt{imdbId}.json
-        // Series: /subtitles/series/tt{imdbId}:{season}:{episode}.json
-        $videoId = 'tt' . $imdbId;
-        if ($type === 'series' && $season && $episode) {
-            $videoId .= ':' . $season . ':' . $episode;
+        if (empty($this->apiKey)) {
+            error_log("[SUBTITLES] API key not configured");
+            return ['error' => 'API key not configured'];
         }
         
-        $url = $this->baseUrl . '/' . $this->config . '/subtitles/' . $type . '/' . $videoId . '.json';
+        // Clean IMDB ID (ensure it has 'tt' prefix)
+        $imdbId = preg_replace('/^tt/', '', $imdbId);
+        $imdbId = 'tt' . $imdbId;
+        
+        // Build query parameters
+        $params = [
+            'imdb_id' => $imdbId,
+            'languages' => 'pt-br,en',
+            'order_by' => 'download_count',
+            'order_direction' => 'desc'
+        ];
+        
+        // Add season/episode for series
+        if ($type === 'series' && $season && $episode) {
+            $params['season_number'] = $season;
+            $params['episode_number'] = $episode;
+        }
+        
+        $url = $this->baseUrl . '/subtitles?' . http_build_query($params);
         
         error_log("[SUBTITLES] Searching: $url");
         
+        $response = $this->makeRequest($url);
+        
+        if (isset($response['error'])) {
+            return $response;
+        }
+        
+        return $this->formatSubtitles($response);
+    }
+    
+    private function makeRequest($url, $method = 'GET', $body = null) {
         $ch = curl_init();
+        
+        $headers = [
+            'Api-Key: ' . $this->apiKey,
+            'Content-Type: application/json',
+            'User-Agent: CineVision v1.0'
+        ];
+        
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -32,68 +73,87 @@ class OpenSubtitlesService {
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => [
-                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept: application/json'
-            ]
+            CURLOPT_HTTPHEADER => $headers
         ]);
+        
+        if ($method === 'POST' && $body) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+        }
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
-        $errno = curl_errno($ch);
         curl_close($ch);
         
-        error_log("[SUBTITLES] Response code: $httpCode, error: $error");
+        error_log("[SUBTITLES] Response code: $httpCode");
         
-        if ($errno || $error) {
-            error_log("[SUBTITLES] cURL error ($errno): $error");
+        if ($error) {
+            error_log("[SUBTITLES] cURL error: $error");
             return ['error' => 'Network error: ' . $error];
         }
         
         if ($httpCode !== 200) {
             error_log("[SUBTITLES] HTTP error: $httpCode - Response: " . substr($response, 0, 200));
-            // Retornar array vazio em vez de erro para não quebrar o player
-            return [];
+            return ['error' => "HTTP error: $httpCode"];
         }
         
         $data = json_decode($response, true);
         if (!$data) {
-            error_log("[SUBTITLES] Invalid JSON: " . substr($response, 0, 200));
-            return [];
+            return ['error' => 'Invalid JSON response'];
         }
         
-        error_log("[SUBTITLES] Found " . count($data['subtitles'] ?? []) . " subtitles");
+        return $data;
+    }
+    
+    public function getDownloadUrl($fileId) {
+        $url = $this->baseUrl . '/download';
         
-        return $this->formatSubtitles($data);
+        $response = $this->makeRequest($url, 'POST', [
+            'file_id' => $fileId
+        ]);
+        
+        if (isset($response['error'])) {
+            return null;
+        }
+        
+        return $response['link'] ?? null;
     }
     
     private function formatSubtitles($data) {
         $subtitles = [];
+        $items = $data['data'] ?? [];
         
-        // Stremio addon format: { subtitles: [{id, url, lang, ...}] }
-        $items = $data['subtitles'] ?? [];
-        
-        // Limit to 10 subtitles
-        $items = array_slice($items, 0, 10);
+        // Limit to 15 subtitles
+        $items = array_slice($items, 0, 15);
         
         foreach ($items as $item) {
-            $lang = $item['lang'] ?? 'unknown';
+            $attributes = $item['attributes'] ?? [];
+            $files = $attributes['files'] ?? [];
+            
+            if (empty($files)) continue;
+            
+            $file = $files[0]; // Get first file
+            $lang = $attributes['language'] ?? 'unknown';
+            
+            // Get download URL
+            $downloadUrl = $this->getDownloadUrl($file['file_id']);
+            
+            if (!$downloadUrl) continue;
             
             $subtitle = [
                 'id' => $item['id'] ?? uniqid(),
-                'title' => $item['SubFileName'] ?? $item['id'] ?? 'Legenda',
+                'title' => $attributes['release'] ?? $attributes['feature_details']['title'] ?? 'Legenda',
                 'language' => $lang,
                 'language_name' => $this->getLanguageName($lang),
-                'url' => $item['url'] ?? '',
-                'downloads' => $item['SubDownloadsCnt'] ?? 0,
-                'rating' => $item['SubRating'] ?? 0,
-                'format' => 'srt'
+                'url' => $downloadUrl,
+                'downloads' => $attributes['download_count'] ?? 0,
+                'rating' => $attributes['ratings'] ?? 0,
+                'format' => $file['file_name'] ? pathinfo($file['file_name'], PATHINFO_EXTENSION) : 'srt',
+                'uploader' => $attributes['uploader']['name'] ?? 'Unknown'
             ];
             
-            if (!empty($subtitle['url'])) {
-                $subtitles[] = $subtitle;
-            }
+            $subtitles[] = $subtitle;
         }
         
         return $subtitles;
@@ -101,25 +161,26 @@ class OpenSubtitlesService {
     
     private function getLanguageName($code) {
         $languages = [
+            'pt-br' => 'Português (BR)',
+            'pt-pt' => 'Português (PT)',
             'por' => 'Português (BR)',
             'pob' => 'Português (BR)',
-            'pt' => 'Português (PT)',
-            'eng' => 'English',
             'en' => 'English',
-            'spa' => 'Español',
+            'eng' => 'English',
             'es' => 'Español',
-            'fre' => 'Français',
+            'spa' => 'Español',
             'fr' => 'Français',
-            'ger' => 'Deutsch',
+            'fre' => 'Français',
             'de' => 'Deutsch',
-            'ita' => 'Italiano',
+            'ger' => 'Deutsch',
             'it' => 'Italiano',
-            'dut' => 'Nederlands',
+            'ita' => 'Italiano',
             'nl' => 'Nederlands',
-            'pol' => 'Polski',
+            'dut' => 'Nederlands',
             'pl' => 'Polski',
-            'rus' => 'Русский',
-            'ru' => 'Русский'
+            'pol' => 'Polski',
+            'ru' => 'Русский',
+            'rus' => 'Русский'
         ];
         
         return $languages[$code] ?? strtoupper($code);

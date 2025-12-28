@@ -155,11 +155,40 @@ class TorrentioService {
         return ['metas' => array_merge($movies, $series)];
     }
 
-    public function getCatalog($type = 'movie') {
-        $url = "https://v3-cinemeta.strem.io/catalog/$type/top.json";
-        $cacheKey = "catalog_{$type}";
+    public function getCatalog($type = 'movie', $pages = 5) {
+        $cacheKey = "catalog_{$type}_pages_{$pages}";
         
-        return $this->getCached($cacheKey, $url);
+        // Check memory cache
+        if (isset(self::$cache[$cacheKey]) && self::$cache[$cacheKey]['expires'] > time()) {
+            return self::$cache[$cacheKey]['data'];
+        }
+        
+        $allMetas = [];
+        $urls = [];
+        
+        // Build URLs for multiple pages (100 items per page)
+        for ($i = 0; $i < $pages; $i++) {
+            $skip = $i * 100;
+            $urls["page_{$i}"] = "https://v3-cinemeta.strem.io/catalog/$type/top/skip={$skip}.json";
+        }
+        
+        // Fetch all pages in parallel
+        $responses = $this->httpGetMulti($urls);
+        
+        foreach ($responses as $response) {
+            if ($response) {
+                $data = json_decode($response, true);
+                $metas = $data['metas'] ?? [];
+                $allMetas = array_merge($allMetas, $metas);
+            }
+        }
+        
+        $result = ['metas' => $allMetas];
+        
+        // Cache the combined result
+        self::$cache[$cacheKey] = ['data' => $result, 'expires' => time() + self::CACHE_TTL];
+        
+        return $result;
     }
 
     public function getStreams($type, $imdbId, $season = null, $episode = null) {

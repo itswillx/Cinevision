@@ -359,24 +359,34 @@ $year = $meta['year'] ?? '';
         return false;
     };
     
-    // Inicializar streams e paginação - busca via frontend (Torrentio)
+    // Inicializar streams e paginação - busca via backend (evita CORS)
     async function initStreams() {
         const container = document.getElementById('streamListContainer');
         const countEl = document.getElementById('streamCount');
-        container.innerHTML = '<p style="padding: 10px; color: var(--text-muted);">🔄 Buscando fontes em português...</p>';
+        container.innerHTML = '<p style="padding: 10px; color: var(--text-muted);">🔄 Buscando fontes...</p>';
         
         try {
-            // Buscar streams em português primeiro, depois em inglês
-            const ptStreams = await fetchTorrentioStreams('portuguese');
+            // Buscar streams via backend (evita problemas de CORS)
+            let apiUrl = `/api/streams?id=${imdbId}&type=${contentType}`;
+            if (contentType === 'series' && season && episode) {
+                apiUrl += `&season=${season}&episode=${episode}`;
+            }
             
-            container.innerHTML = '<p style="padding: 10px; color: var(--text-muted);">🔄 Buscando fontes adicionais...</p>';
-            const enStreams = await fetchTorrentioStreams('english');
+            console.log('[Player] Fetching streams via backend:', apiUrl);
             
-            // Mesclar streams sem duplicatas (PT-BR primeiro)
-            let streams = mergeStreams(ptStreams, enStreams);
+            const response = await fetch(apiUrl);
             
-            // Filtrar fontes de baixa qualidade
-            streams = filterLowQualitySources(streams);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            let streams = data.streams || [];
             
             // Ordenar streams por qualidade preferida do usuário
             if (qualityPref && streams.length > 0) {
@@ -384,7 +394,7 @@ $year = $meta['year'] ?? '';
             }
             
             allStreams = streams;
-            console.log('Total streams loaded:', allStreams.length);
+            console.log('[Player] Total streams loaded:', allStreams.length);
             
             if (countEl) countEl.textContent = allStreams.length + ' fonte(s)';
             renderStreams();

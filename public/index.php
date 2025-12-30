@@ -216,6 +216,7 @@ $routes = [
         '/api/subtitles/proxy' => ['App\Controllers\SubtitleController', 'proxy'],
         '/api/search/suggest' => ['App\Controllers\CatalogController', 'suggest'],
         '/api/favorites/list' => ['App\Controllers\FavoritesController', 'list'],
+        '/api/streams' => ['App\Controllers\PlayerController', 'getStreams'],
         // Progress routes
         '/api/progress/get' => ['App\Controllers\WatchProgressController', 'get'],
         '/api/progress/sync' => ['App\Controllers\WatchProgressController', 'sync'],

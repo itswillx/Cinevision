@@ -138,13 +138,16 @@ class SubtitleController {
         }
         
         // Set appropriate headers for subtitle file
-        header('Content-Type: text/vtt');
+        header('Content-Type: text/vtt; charset=utf-8');
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET');
         header('Access-Control-Allow-Headers: Content-Type');
         
-        // Convert SRT to VTT if needed
-        if (strpos($content, '0') !== false && strpos($content, '00:00:00') !== false) {
+        // Always convert to VTT format (SRT is not supported by browsers)
+        // Check if it's already VTT
+        $trimmedContent = ltrim($content);
+        if (stripos($trimmedContent, 'WEBVTT') !== 0) {
+            // Not VTT, assume SRT and convert
             $content = $this->convertSrtToVtt($content);
         }
         
@@ -153,9 +156,43 @@ class SubtitleController {
     }
     
     private function convertSrtToVtt($srt) {
-        // Simple SRT to VTT conversion
-        $vtt = "WEBVTT\n\n";
-        $vtt .= str_replace(',', '.', $srt);
+        // Proper SRT to VTT conversion
+        // Remove BOM if present
+        $srt = preg_replace('/^\xEF\xBB\xBF/', '', $srt);
+        
+        // Normalize line endings
+        $srt = str_replace("\r\n", "\n", $srt);
+        $srt = str_replace("\r", "\n", $srt);
+        
+        // Convert SRT timestamps (00:00:00,000) to VTT format (00:00:00.000)
+        // SRT uses comma, VTT uses dot for milliseconds
+        $vtt = preg_replace(
+            '/(\d{2}:\d{2}:\d{2}),(\d{3})/',
+            '$1.$2',
+            $srt
+        );
+        
+        // Remove sequence numbers (lines with just a number before timestamps)
+        // This is optional but makes the VTT cleaner
+        $lines = explode("\n", $vtt);
+        $result = [];
+        $prevWasEmpty = true;
+        
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            // Skip pure numeric lines that are sequence numbers
+            if ($prevWasEmpty && preg_match('/^\d+$/', $trimmed)) {
+                continue;
+            }
+            $result[] = $line;
+            $prevWasEmpty = ($trimmed === '');
+        }
+        
+        $vtt = implode("\n", $result);
+        
+        // Add VTT header
+        $vtt = "WEBVTT\n\n" . ltrim($vtt);
+        
         return $vtt;
     }
 }

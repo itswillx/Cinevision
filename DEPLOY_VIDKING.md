@@ -8,8 +8,12 @@ O player foi alterado de Torrentio/RealDebrid para Vidking, que usa iframe embed
 | Arquivo | Ação |
 |---------|------|
 | `app/Controllers/PlayerController.php` | **Substituir** |
+| `app/Controllers/WatchProgressController.php` | **Substituir** |
 | `app/Views/player_vidking.php` | **Copiar** (novo) |
+| `app/Views/favorites.php` | **Substituir** |
+| `app/Models/WatchProgress.php` | **Substituir** |
 | `app/Services/TMDBService.php` | **Substituir** |
+| `public/assets/js/favorites.js` | **Substituir** |
 
 ## Configuração Necessária em PRD
 
@@ -25,11 +29,25 @@ Adicione a chave TMDB:
 - **Filmes:** `https://www.vidking.net/embed/movie/{tmdbId}?color=%23E50914&primaryColor=%23E50914&autoplay=true`
 - **Séries:** `https://www.vidking.net/embed/tv/{tmdbId}/{season}/{episode}?color=%23E50914&primaryColor=%23E50914&autoplay=true`
 
+## Parâmetros do Player
+
+| Parâmetro | Valor | Descrição |
+|-----------|-------|-----------|
+| `color` | `%23E50914` | Cor vermelha (Netflix) |
+| `primaryColor` | `%23E50914` | Cor primária vermelha |
+| `autoplay` | `true` | Reprodução automática |
+
+**Nota:** A seleção de servidor (Oxygen, Hydrogen, etc.) é controlada pelo usuário na interface do player. Não é possível definir via URL.
+
 ## Arquivos NÃO copiar para PRD
 
 - `public/index_local.php`
 - `setup_local.php`
 - `DEPLOY_VIDKING.md`
+
+## Limitações
+
+- **Progresso de reprodução:** O player Vidking é um iframe cross-origin, então não é possível capturar o tempo real de reprodução. A seção "Continuar Assistindo" mostra "Começou a assistir" para itens do Vidking.
 
 ## Rollback
 
@@ -46,5 +64,6 @@ $view = __DIR__ . '/../Views/player.php';
 
 1. Login funciona
 2. Catálogo carrega
-3. Player Vidking exibe conteúdo
+3. Player Vidking exibe conteúdo com servidor Oxygen
 4. Cores do player em vermelho
+5. Seção "Continuar Assistindo" mostra itens assistidos

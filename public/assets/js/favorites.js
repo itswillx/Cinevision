@@ -293,17 +293,25 @@ const CineVision = {
      * @param {object} data - { currentTime, duration, streamIndex, season, episode }
      */
     savePlayerProgress(imdbId, data) {
-        // Usar CineVision diretamente para evitar problemas de contexto
-        CineVision.saveProgress(imdbId, {
-            currentTime: data.currentTime || 0,
+        const progressData = {
+            current_time: data.current_time || data.currentTime || 0,
             duration: data.duration || 0,
-            percent: data.duration ? Math.round((data.currentTime / data.duration) * 100) : 0,
+            percent: data.percent || (data.duration ? Math.round(((data.current_time || data.currentTime || 0) / data.duration) * 100) : 0),
             streamIndex: data.streamIndex || 0,
             streamUrl: data.streamUrl || '',
             season: data.season || null,
             episode: data.episode || null,
-            type: data.type || 'movie'
-        });
+            type: data.type || 'movie',
+            title: data.title || '',
+            poster: data.poster || '',
+            year: data.year || ''
+        };
+        
+        // Salvar localmente
+        CineVision.saveProgress(imdbId, progressData);
+        
+        // Salvar no servidor também
+        CineVision.saveProgressNow(imdbId, progressData);
     },
     
     /**

@@ -70,7 +70,9 @@ class WatchProgressController {
             return;
         }
 
+        error_log("WatchProgressController::save - Input: " . json_encode($input));
         error_log("WatchProgressController::save - Data: " . json_encode($data));
+        error_log("WatchProgressController::save - Percent value: " . $percent);
 
         try {
             $progressModel = new WatchProgress();
@@ -158,6 +160,9 @@ class WatchProgressController {
             $progressModel->setToken($_SESSION['access_token']);
             
             $items = $progressModel->getContinueWatching($_SESSION['user_id']);
+            
+            error_log("WatchProgressController::continueWatching - Items count: " . count($items));
+            error_log("WatchProgressController::continueWatching - Items: " . json_encode(array_values($items)));
             
             echo json_encode(['items' => array_values($items)]);
         } catch (\Exception $e) {

@@ -93,14 +93,23 @@ class WatchProgress {
             'limit' => $limit
         ]);
         
+        error_log("WatchProgress::getContinueWatching - Raw result count: " . (is_array($result) ? count($result) : 'not array'));
+        error_log("WatchProgress::getContinueWatching - Raw result: " . json_encode($result));
+        
         if (SupabaseService::hasError($result)) {
+            error_log("WatchProgress::getContinueWatching - Supabase error: " . json_encode($result));
             return [];
         }
 
         // Filtrar apenas os que não foram completados e têm progresso > 0
-        return array_filter($result ?? [], function($item) {
-            return !$item['completed'] && $item['percent_watched'] > 0 && $item['percent_watched'] < 95;
+        $filtered = array_filter($result ?? [], function($item) {
+            $passes = !$item['completed'] && $item['percent_watched'] > 0 && $item['percent_watched'] < 95;
+            error_log("WatchProgress::getContinueWatching - Item {$item['imdb_id']}: completed={$item['completed']}, percent={$item['percent_watched']}, passes=$passes");
+            return $passes;
         });
+        
+        error_log("WatchProgress::getContinueWatching - Filtered count: " . count($filtered));
+        return $filtered;
     }
 
     /**

@@ -141,13 +141,23 @@ document.addEventListener('DOMContentLoaded', function() {
 // Carregar seção "Continuar Assistindo" do servidor
 async function loadContinueWatching() {
     try {
+        console.log('[Favorites] Loading continue watching...');
         const response = await fetch('/api/progress/continue-watching');
-        if (!response.ok) return;
+        console.log('[Favorites] Response status:', response.status);
+        if (!response.ok) {
+            console.error('[Favorites] Response not ok:', response.status);
+            return;
+        }
         
         const data = await response.json();
+        console.log('[Favorites] Data received:', data);
         const items = data.items || [];
+        console.log('[Favorites] Items count:', items.length);
         
-        if (items.length === 0) return;
+        if (items.length === 0) {
+            console.log('[Favorites] No items to display');
+            return;
+        }
         
         const section = document.getElementById('continueWatchingSection');
         const grid = document.getElementById('continueWatchingGrid');
@@ -156,6 +166,9 @@ async function loadContinueWatching() {
             const timeStr = formatTime(item.current_time_sec || 0);
             const remainingTime = formatTime((item.duration_sec || 0) - (item.current_time_sec || 0));
             const percent = item.percent_watched || 0;
+            
+            // Check if this is from Vidking player (has minimal progress values)
+            const isVidkingProgress = item.duration_sec <= 100 && item.current_time_sec <= 1;
             
             // Construir URL com parâmetro de tempo e stream info
             let watchUrl = `/watch?id=${item.imdb_id}&type=${item.type}`;
@@ -191,7 +204,7 @@ async function loadContinueWatching() {
                     <div style="flex: 1; padding: 15px 15px 15px 0; display: flex; flex-direction: column; justify-content: center;">
                         <h3 style="margin: 0 0 5px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayTitle}</h3>
                         <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">
-                            ${timeStr} assistido • Faltam ${remainingTime}
+                            ${isVidkingProgress ? 'Começou a assistir' : `${timeStr} assistido • Faltam ${remainingTime}`}
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <a href="${watchUrl}" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">

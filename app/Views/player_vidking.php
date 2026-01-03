@@ -12,7 +12,8 @@ $year = $meta['year'] ?? '';
 $contentId = $tmdbId ?? $imdbId; // Fallback to IMDB ID if TMDB conversion failed
 
 // Vidking embed parameters
-// Try with # prefix and different formats
+// color: Netflix red, autoplay: true
+// Note: Server selection (Oxygen, Hydrogen, etc.) is controlled by the player UI, not URL params
 $playerParams = 'color=%23E50914&primaryColor=%23E50914&autoplay=true';
 
 if ($isSeries && isset($season) && isset($episode)) {
@@ -173,13 +174,18 @@ if ($isSeries && isset($season) && isset($episode)) {
     <?php endif; ?>
     
     // Save to continue watching when user starts watching
-    document.addEventListener('DOMContentLoaded', function() {
+    // Use window.onload to ensure all scripts are loaded
+    window.addEventListener('load', function() {
         // Register view after 5 seconds (user is actually watching)
         setTimeout(function() {
-            if (typeof CineVision !== 'undefined') {
+            console.log('[Vidking] Attempting to save progress...');
+            console.log('[Vidking] CineVision available:', typeof window.CineVision !== 'undefined');
+            
+            if (typeof window.CineVision !== 'undefined' && typeof window.CineVision.savePlayerProgress === 'function') {
                 const progressData = {
-                    currentTime: 0,
-                    duration: 0,
+                    current_time: 1,      // Minimum value to indicate started watching
+                    duration: 100,        // Estimated duration (will show ~1% progress)
+                    percent: 1,           // 1% progress to appear in "Continue Watching"
                     season: season || null,
                     episode: episode || null,
                     type: contentType,
@@ -188,8 +194,32 @@ if ($isSeries && isset($season) && isset($episode)) {
                     year: year,
                     player: 'vidking'
                 };
-                CineVision.savePlayerProgress(imdbId, progressData);
+                console.log('[Vidking] Progress data:', progressData);
+                window.CineVision.savePlayerProgress(imdbId, progressData);
                 console.log('[Vidking] Progress saved for continue watching');
+            } else {
+                console.error('[Vidking] CineVision not available or savePlayerProgress not a function');
+                // Fallback: call API directly
+                fetch('/api/progress/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imdb_id: imdbId,
+                        current_time: 1,
+                        duration: 100,
+                        percent: 1,
+                        season: season || null,
+                        episode: episode || null,
+                        type: contentType,
+                        title: title,
+                        poster: poster,
+                        year: year
+                    })
+                }).then(r => r.json()).then(data => {
+                    console.log('[Vidking] Fallback save result:', data);
+                }).catch(err => {
+                    console.error('[Vidking] Fallback save error:', err);
+                });
             }
         }, 5000);
     });

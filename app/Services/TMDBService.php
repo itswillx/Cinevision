@@ -239,10 +239,26 @@ class TMDBService {
             return ['error' => 'TMDB API key not configured'];
         }
         
-        $params['api_key'] = $this->apiKey;
-        $url = $this->baseUrl . $endpoint . '?' . http_build_query($params);
+        // Check if API key is a Bearer token (JWT) or legacy API key
+        $isBearerToken = str_starts_with($this->apiKey, 'eyJ');
+        
+        if (!$isBearerToken) {
+            // Legacy API key - add to query params
+            $params['api_key'] = $this->apiKey;
+        }
+        
+        $url = $this->baseUrl . $endpoint;
+        if (!empty($params)) {
+            $url .= '?' . http_build_query($params);
+        }
         
         error_log("TMDBService::makeRequest - URL: $url");
+        
+        $headers = ['Accept: application/json'];
+        if ($isBearerToken) {
+            // Bearer token - add to Authorization header
+            $headers[] = 'Authorization: Bearer ' . $this->apiKey;
+        }
         
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -251,9 +267,7 @@ class TMDBService {
             CURLOPT_TIMEOUT => 10,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HTTPHEADER => [
-                'Accept: application/json'
-            ]
+            CURLOPT_HTTPHEADER => $headers
         ]);
         
         $response = curl_exec($ch);

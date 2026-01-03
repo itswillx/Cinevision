@@ -3,8 +3,7 @@
 namespace App\Controllers;
 
 use App\Services\TorrentioService;
-use App\Services\SubtitlesService;
-use App\Services\RealDebridService;
+use App\Services\TMDBService;
 use App\Models\Settings;
 
 class PlayerController {
@@ -80,22 +79,7 @@ class PlayerController {
             exit;
         }
 
-        // Get User Settings first (needed for streams filtering)
-        $settingsModel = new Settings();
-        if (isset($_SESSION['access_token'])) {
-            $settingsModel->setToken($_SESSION['access_token']);
-        }
-        $settings = $settingsModel->getByUserId($_SESSION['user_id']);
-        $rdEnabled = !empty($settings['rd_token']);
-        $rdToken = $settings['rd_token'] ?? null;
-        $qualityPref = $settings['quality_pref'] ?? null;
-
-        // Get Streams with user preferences (RD token for better results, quality filter)
-        $torrentio = new TorrentioService($rdToken, $qualityPref);
-        $streamsData = $torrentio->getStreams($type, $imdbId, $season, $episode);
-        $streams = $streamsData['streams'] ?? [];
-
-        // Get metadata for title display (no need for RD token here)
+        // Get metadata for title display using Cinemeta API
         $torrentioMeta = new TorrentioService();
         if ($type === 'series') {
             $metaData = $torrentioMeta->getSeriesInfo($imdbId);
@@ -104,11 +88,23 @@ class PlayerController {
         }
         $meta = $metaData['meta'] ?? null;
 
-        // Get Subtitles
-        $subtitlesService = new SubtitlesService();
-        $subtitles = $subtitlesService->getSubtitles($type, $imdbId, $season, $episode);
+        // Convert IMDB ID to TMDB ID for Vidking player
+        $tmdbId = null;
+        $tmdbService = new TMDBService();
+        if ($tmdbService->isConfigured()) {
+            $findResult = $tmdbService->findByImdbId($imdbId);
+            if ($type === 'series') {
+                $tmdbId = $findResult['tv_results'][0]['id'] ?? null;
+            } else {
+                $tmdbId = $findResult['movie_results'][0]['id'] ?? null;
+            }
+            error_log("[Player] IMDB->TMDB conversion: $imdbId -> $tmdbId");
+        } else {
+            error_log("[Player] TMDB not configured, cannot convert IMDB to TMDB ID");
+        }
 
-        $view = __DIR__ . '/../Views/player.php';
+        // Use Vidking player (iframe-based, no need for streams/RD)
+        $view = __DIR__ . '/../Views/player_vidking.php';
         require __DIR__ . '/../Views/layout.php';
     }
 }

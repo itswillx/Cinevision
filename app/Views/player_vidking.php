@@ -81,6 +81,26 @@ if ($isSeries && isset($season) && isset($episode)) {
                 <?php endif; ?>
             </div>
             
+            <!-- OpenSubtitles Section -->
+            <div style="margin-top: 20px;">
+                <h3>🌐 OpenSubtitles</h3>
+                <div id="openSubtitlesSection" style="padding: 15px; background: var(--card-bg); border-radius: 8px;">
+                    <button id="loadOpenSubtitles" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">
+                        Buscar Legendas no OpenSubtitles
+                    </button>
+                    <div id="subtitlesList" style="display: none;">
+                        <input type="text" id="subtitleSearch" placeholder="Filtrar por idioma..." 
+                               class="form-control" style="margin-bottom: 10px;">
+                        <div id="subtitlesContainer" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Legendas serão carregadas aqui -->
+                        </div>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">
+                        💡 Baixe a legenda e use "Upload Custom Subtitle (.vtt)" no player
+                    </p>
+                </div>
+            </div>
+            
             <!-- Player Tips -->
             <div style="margin-top: 20px;">
                 <h3>Dicas</h3>
@@ -222,5 +242,105 @@ if ($isSeries && isset($season) && isset($episode)) {
                 });
             }
         }, 5000);
+    });
+    
+    // OpenSubtitles functionality
+    document.getElementById('loadOpenSubtitles').addEventListener('click', async function() {
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Buscando...';
+        
+        try {
+            let params = `imdb_id=${imdbId}&type=${contentType}`;
+            if (season) params += `&season=${season}`;
+            if (episode) params += `&episode=${episode}`;
+            
+            const response = await fetch('/api/subtitles/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+            
+            const data = await response.json();
+            console.log('[OpenSubtitles] Response:', data);
+            
+            if (data.error) throw new Error(data.message);
+            
+            renderSubtitles(data.subtitles || []);
+            document.getElementById('subtitlesList').style.display = 'block';
+            btn.textContent = 'Atualizar Legendas';
+        } catch (e) {
+            console.error('[OpenSubtitles] Error:', e);
+            alert('Erro ao buscar legendas: ' + e.message);
+            btn.textContent = 'Buscar Legendas no OpenSubtitles';
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    function renderSubtitles(subtitles) {
+        const container = document.getElementById('subtitlesContainer');
+        
+        if (subtitles.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhuma legenda encontrada para este conteúdo.</p>';
+            return;
+        }
+        
+        // Ordenar: PT-BR primeiro, depois por downloads
+        subtitles.sort((a, b) => {
+            const isPtA = /pt-br|pob|por|portuguese|portugu/i.test(a.language + ' ' + a.language_name);
+            const isPtB = /pt-br|pob|por|portuguese|portugu/i.test(b.language + ' ' + b.language_name);
+            if (isPtA && !isPtB) return -1;
+            if (!isPtA && isPtB) return 1;
+            return (b.downloads || 0) - (a.downloads || 0);
+        });
+        
+        container.innerHTML = subtitles.map(sub => `
+            <div class="subtitle-item" data-lang="${sub.language_name.toLowerCase()}" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #333; transition: background 0.2s;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.3rem;">${getFlag(sub.language)}</span>
+                    <div>
+                        <strong style="color: #fff;">${sub.language_name}</strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                            ⬇️ ${sub.downloads || 0} downloads
+                        </div>
+                    </div>
+                </div>
+                <a href="${sub.url}" download class="btn" style="padding: 6px 16px; font-size: 0.85rem; background: var(--primary);">
+                    Baixar .srt
+                </a>
+            </div>
+        `).join('');
+        
+        // Hover effect
+        container.querySelectorAll('.subtitle-item').forEach(item => {
+            item.addEventListener('mouseenter', () => item.style.background = 'rgba(255,255,255,0.05)');
+            item.addEventListener('mouseleave', () => item.style.background = 'transparent');
+        });
+    }
+
+    function getFlag(lang) {
+        const flags = {
+            'pt-br': '🇧🇷', 'pob': '🇧🇷', 'por': '🇧🇷',
+            'en': '🇺🇸', 'eng': '🇺🇸',
+            'es': '🇪🇸', 'spa': '🇪🇸',
+            'fr': '🇫🇷', 'fre': '🇫🇷',
+            'de': '🇩🇪', 'ger': '🇩🇪',
+            'it': '🇮🇹', 'ita': '🇮🇹',
+            'nl': '🇳🇱', 'dut': '🇳🇱',
+            'pl': '🇵🇱', 'pol': '🇵🇱',
+            'ru': '🇷🇺', 'rus': '🇷🇺'
+        };
+        return flags[lang] || '🌐';
+    }
+
+    // Filtro de legendas por idioma
+    document.getElementById('subtitleSearch').addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        document.querySelectorAll('.subtitle-item').forEach(item => {
+            const lang = item.dataset.lang || '';
+            const text = item.textContent.toLowerCase();
+            item.style.display = (lang.includes(filter) || text.includes(filter)) ? 'flex' : 'none';
+        });
     });
 </script>

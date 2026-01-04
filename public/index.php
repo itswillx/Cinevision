@@ -16,7 +16,7 @@ function checkUserDisabled(): bool {
         return false; // Não está logado, não precisa verificar
     }
     
-    $config = require '/home/slinkysa/cinevision/config/env.php';
+    $config = require __DIR__ . '/../config/env.php';
     $supabaseUrl = $config['SUPABASE_URL'];
     $serviceKey = $config['SUPABASE_SERVICE_KEY'];
     
@@ -158,7 +158,7 @@ function autoRefreshToken(): void {
 // Autoloader
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
-    $base_dir = '/home/slinkysa/cinevision/app/';
+    $base_dir = __DIR__ . '/../app/';
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
         return;
@@ -173,7 +173,7 @@ spl_autoload_register(function ($class) {
 });
 
 // Load Config
-require_once '/home/slinkysa/cinevision/config/db.php';
+require_once __DIR__ . '/../config/db.php';
 
 // Simple Router
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
